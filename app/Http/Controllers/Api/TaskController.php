@@ -32,13 +32,6 @@ class TaskController extends Controller
      * Retrieves all tasks belonging to the authenticated user. Tasks are returned
      * with their full details including status and timestamps. This endpoint only
      * returns tasks owned by the current user - users cannot see other users' tasks.
-     *
-     * @authenticated
-     *
-     * @response TaskResource[]
-     * @response 401 {
-     *   "message": "Unauthenticated."
-     * }
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -57,19 +50,6 @@ class TaskController extends Controller
      *
      * Creates a new task for the authenticated user. The task will be automatically
      * assigned to the current user. Status defaults to 'pending' if not provided.
-     *
-     * @authenticated
-     *
-     * @response 201 TaskResource
-     * @response 401 {
-     *   "message": "Unauthenticated."
-     * }
-     * @response 422 {
-     *   "message": "The title field is required.",
-     *   "errors": {
-     *     "title": ["The title field is required."]
-     *   }
-     * }
      */
     public function store(StoreTaskRequest $request): TaskResource
     {
@@ -94,16 +74,6 @@ class TaskController extends Controller
      *
      * Retrieves detailed information about a specific task. Users can only view
      * their own tasks. Attempting to view another user's task will return a 404.
-     *
-     * @authenticated
-     *
-     * @response TaskResource
-     * @response 401 {
-     *   "message": "Unauthenticated."
-     * }
-     * @response 404 {
-     *   "message": "No query results for model [App\\Models\\Task]."
-     * }
      */
     public function show(Request $request, string $id): TaskResource
     {
@@ -123,22 +93,6 @@ class TaskController extends Controller
      * Updates an existing task. Users can only update their own tasks. All fields
      * are optional - only provided fields will be updated. When status is changed
      * to 'completed', the completed_at timestamp is automatically set by the TaskObserver.
-     *
-     * @authenticated
-     *
-     * @response TaskResource
-     * @response 401 {
-     *   "message": "Unauthenticated."
-     * }
-     * @response 404 {
-     *   "message": "No query results for model [App\\Models\\Task]."
-     * }
-     * @response 422 {
-     *   "message": "The status must be one of: pending, in_progress, completed.",
-     *   "errors": {
-     *     "status": ["The status must be one of: pending, in_progress, completed."]
-     *   }
-     * }
      */
     public function update(UpdateTaskRequest $request, string $id): TaskResource
     {
@@ -160,16 +114,6 @@ class TaskController extends Controller
      *
      * Permanently deletes a task. Users can only delete their own tasks.
      * This action cannot be undone.
-     *
-     * @authenticated
-     *
-     * @response 204
-     * @response 401 {
-     *   "message": "Unauthenticated."
-     * }
-     * @response 404 {
-     *   "message": "No query results for model [App\\Models\\Task]."
-     * }
      */
     public function destroy(Request $request, string $id): JsonResponse
     {

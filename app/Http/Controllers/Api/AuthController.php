@@ -34,17 +34,6 @@ class AuthController extends Controller
      * the user receives their account details and a token they can use for subsequent API requests.
      *
      * @unauthenticated
-     *
-     * @response 201 array{user: UserResource, token: string}
-     * @response 422 {
-     *   "message": "The email has already been taken.",
-     *   "errors": {
-     *     "email": ["The email has already been taken."]
-     *   }
-     * }
-     * @response 429 {
-     *   "message": "Too Many Attempts."
-     * }
      */
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -77,17 +66,6 @@ class AuthController extends Controller
      * details along with a fresh authentication token for making authenticated API requests.
      *
      * @unauthenticated
-     *
-     * @response array{user: UserResource, token: string}
-     * @response 422 {
-     *   "message": "The provided credentials are incorrect.",
-     *   "errors": {
-     *     "email": ["The provided credentials are incorrect."]
-     *   }
-     * }
-     * @response 429 {
-     *   "message": "Too Many Attempts."
-     * }
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -118,13 +96,6 @@ class AuthController extends Controller
      * Revokes the current API Bearer token, effectively logging out the user from this device/session.
      * This endpoint requires authentication and will delete only the token used in the request,
      * allowing the user to remain logged in on other devices if they have multiple active tokens.
-     *
-     * @authenticated
-     *
-     * @response array{message: string}
-     * @response 401 {
-     *   "message": "Unauthenticated."
-     * }
      */
     public function logout(Request $request): JsonResponse
     {
