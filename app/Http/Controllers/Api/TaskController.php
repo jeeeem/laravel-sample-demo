@@ -9,13 +9,12 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * @group Task Management
- *
  * Endpoints for managing tasks. All endpoints require authentication and automatically
  * scope operations to the authenticated user's tasks only.
  *
@@ -24,6 +23,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
  * - in_progress: Task is currently being worked on
  * - completed: Task is finished (sets completed_at timestamp)
  */
+#[Group('Task Management', weight: 2)]
 class TaskController extends Controller
 {
     /**

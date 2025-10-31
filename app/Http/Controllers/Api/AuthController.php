@@ -9,14 +9,13 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @group Authentication
- *
  * Endpoints for user authentication including registration, login, and logout.
  * All authenticated endpoints require a Bearer token in the Authorization header.
  *
@@ -24,6 +23,7 @@ use Illuminate\Validation\ValidationException;
  * - Register: 10 attempts per minute per IP address
  * - Login: 10 attempts per minute per IP address
  */
+#[Group('Authentication', weight: 1)]
 class AuthController extends Controller
 {
     /**
