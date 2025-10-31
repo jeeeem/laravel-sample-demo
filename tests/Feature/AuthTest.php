@@ -222,3 +222,65 @@ describe('Protected Routes', function () {
             ->assertJsonMissing(['remember_token']);
     });
 });
+
+describe('Rate Limiting', function () {
+    test('login endpoint is rate limited to 5 attempts per minute', function () {
+        // Make 5 requests (should all succeed or fail based on credentials, but not be rate limited)
+        for ($i = 0; $i < 5; $i++) {
+            postJson('/api/login', [
+                'email' => 'nonexistent@gmail.com',
+                'password' => 'wrong',
+            ])->assertStatus(422); // Invalid credentials
+        }
+
+        // 6th request should be rate limited
+        $response = postJson('/api/login', [
+            'email' => 'nonexistent@gmail.com',
+            'password' => 'wrong',
+        ]);
+
+        $response->assertStatus(429) // Too Many Requests
+            ->assertHeader('X-RateLimit-Limit', '5')
+            ->assertHeader('Retry-After');
+    });
+
+    test('register endpoint is rate limited to 3 attempts per minute', function () {
+        // Make 3 requests (should fail validation, but not be rate limited)
+        for ($i = 0; $i < 3; $i++) {
+            postJson('/api/register', [
+                'name' => 'Test User',
+                'email' => 'invalid-email', // Invalid format
+                'password' => 'password123',
+                'password_confirmation' => 'password123',
+            ])->assertStatus(422); // Validation error
+        }
+
+        // 4th request should be rate limited
+        $response = postJson('/api/register', [
+            'name' => 'Test User',
+            'email' => 'invalid-email',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $response->assertStatus(429)
+            ->assertHeader('X-RateLimit-Limit', '3')
+            ->assertHeader('Retry-After');
+    });
+
+    test('rate limit headers are present on successful requests', function () {
+        User::factory()->create([
+            'email' => 'test@gmail.com',
+            'password' => bcrypt('password123'),
+        ]);
+
+        $response = postJson('/api/login', [
+            'email' => 'test@gmail.com',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertHeader('X-RateLimit-Limit', '5')
+            ->assertHeader('X-RateLimit-Remaining');
+    });
+});
