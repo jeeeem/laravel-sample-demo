@@ -7,6 +7,91 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Development Setup
+
+### Pest Testing with Full IDE Support
+
+This project uses [Pest 4](https://pestphp.com/) for testing with the [Laravel plugin](https://pestphp.com/docs/plugins#laravel) for enhanced testing capabilities.
+
+#### ✅ Recommended: Use Namespaced Functions (Production-Ready)
+
+The **official Pest way** - clean, works with all IDEs, and production-ready:
+
+```php
+use function Pest\Laravel\{getJson, postJson, putJson, deleteJson};
+use Laravel\Sanctum\Sanctum;
+
+test('authenticated users can create tasks', function () {
+    Sanctum::actingAs(User::factory()->create());
+    
+    postJson('/api/tasks', ['title' => 'Test Task'])
+        ->assertStatus(201)
+        ->assertJsonStructure(['id', 'title']);
+});
+
+test('guests cannot access protected routes', function () {
+    getJson('/api/user')->assertStatus(401);
+});
+```
+
+**Available namespaced functions:**
+```php
+use function Pest\Laravel\{
+    // HTTP requests
+    get, post, put, patch, delete,
+    getJson, postJson, putJson, patchJson, deleteJson,
+    
+    // Authentication
+    actingAs, assertAuthenticated, assertGuest,
+    
+    // Headers
+    withHeader, withHeaders, withoutHeader,
+    
+    // Database
+    assertDatabaseHas, assertDatabaseMissing,
+    
+    // ... ALL Laravel test helpers!
+};
+```
+
+**Why use namespaced functions?**
+- ✅ Official Pest best practice
+- ✅ Works with ALL IDEs (PhpStorm, Intelephense, Phpactor)
+- ✅ No type hints needed
+- ✅ Cleaner, more functional code style
+- ✅ Production-ready (used by Laravel community)
+
+#### Alternative: Traditional $this-> Style
+
+You can still use the traditional approach if preferred:
+
+```php
+test('my test', function () {
+    $this->postJson('/api/endpoint')->assertStatus(200);
+});
+```
+
+**For Intelephense users only:** If using `$this->` and you need IDE support, you can optionally add type hints during development:
+
+```php
+test('my test', function () {
+    /** @var \Tests\TestCase $this */
+    $this->postJson('/api/endpoint')->assertStatus(200);
+});
+```
+
+However, **namespaced functions are strongly recommended** as they eliminate the need for type hints entirely.
+
+#### IDE Helper Command (Optional)
+
+Generate PHPDoc annotations for the TestCase class (useful for reference):
+
+```bash
+php artisan ide-helper:pest
+```
+
+This generates 442+ method annotations for IDE autocomplete when using the `$this->` style.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
