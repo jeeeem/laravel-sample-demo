@@ -33,8 +33,6 @@ class AuthController extends Controller
      * This endpoint allows new users to sign up for the application. Upon successful registration,
      * the user receives their account details and a token they can use for subsequent API requests.
      *
-     * Rate limit: 10 attempts per minute per IP address to prevent abuse.
-     *
      * @unauthenticated
      *
      * @response 201 array{user: UserResource, token: string}
@@ -77,8 +75,6 @@ class AuthController extends Controller
      * Authenticates a user with their email and password, then issues an API Bearer token.
      * This endpoint verifies the user's credentials and, if valid, returns their account
      * details along with a fresh authentication token for making authenticated API requests.
-     *
-     * Rate limit: 10 attempts per minute per IP address to prevent brute-force attacks.
      *
      * @unauthenticated
      *
