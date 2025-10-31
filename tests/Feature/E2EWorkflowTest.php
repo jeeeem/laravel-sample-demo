@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\TaskStatus;
 use App\Models\Task;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
@@ -47,7 +48,7 @@ describe('Complete User Journey', function () {
         $task1 = postJson('/api/v1/tasks', [
             'title' => 'Complete project documentation',
             'description' => 'Write API docs',
-            'status' => Task::STATUS_PENDING,
+            'status' => TaskStatus::Pending->value,
         ]);
 
         $task1->assertStatus(201);
@@ -76,24 +77,24 @@ describe('Complete User Journey', function () {
 
         // Step 5: Update task status to in_progress
         $updateResponse = putJson("/api/v1/tasks/{$task1Id}", [
-            'status' => Task::STATUS_IN_PROGRESS,
+            'status' => TaskStatus::InProgress->value,
         ]);
 
         $updateResponse->assertStatus(200)
             ->assertJson([
                 'id' => $task1Id,
-                'status' => Task::STATUS_IN_PROGRESS,
+                'status' => TaskStatus::InProgress->value,
             ]);
 
         // Step 6: Complete a task
         $completeResponse = putJson("/api/v1/tasks/{$task1Id}", [
-            'status' => Task::STATUS_COMPLETED,
+            'status' => TaskStatus::Completed->value,
         ]);
 
         $completeResponse->assertStatus(200)
             ->assertJson([
                 'id' => $task1Id,
-                'status' => Task::STATUS_COMPLETED,
+                'status' => TaskStatus::Completed->value,
             ]);
 
         expect($completeResponse->json('completed_at'))->not->toBeNull();
@@ -137,13 +138,13 @@ describe('Complete User Journey', function () {
         assertDatabaseHas('tasks', [
             'id' => $task1Id,
             'user_id' => $userId,
-            'status' => Task::STATUS_COMPLETED,
+            'status' => TaskStatus::Completed->value,
         ]);
 
         assertDatabaseHas('tasks', [
             'id' => $task2Id,
             'user_id' => $userId,
-            'status' => Task::STATUS_PENDING,
+            'status' => TaskStatus::Pending->value,
         ]);
     });
 });

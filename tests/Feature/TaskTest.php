@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\TaskStatus;
 use App\Models\Task;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
@@ -28,7 +29,7 @@ describe('Task Creation', function () {
             ->assertJson([
                 'title' => 'Test Task',
                 'description' => 'This is a test task',
-                'status' => Task::STATUS_PENDING,
+                'status' => TaskStatus::Pending->value,
             ]);
 
         assertDatabaseHas('tasks', [
@@ -85,7 +86,7 @@ describe('Task Creation', function () {
         ]);
 
         $response->assertStatus(201)
-            ->assertJson(['status' => Task::STATUS_PENDING]);
+            ->assertJson(['status' => TaskStatus::Pending->value]);
     });
 });
 
@@ -132,7 +133,7 @@ describe('Task Listing', function () {
 
         Task::factory()->for($user)->create([
             'title' => 'Sample Task',
-            'status' => Task::STATUS_IN_PROGRESS,
+            'status' => TaskStatus::InProgress,
         ]);
 
         $response = getJson('/api/v1/tasks');
@@ -246,15 +247,15 @@ describe('Task Updating', function () {
         $task = Task::factory()->for($user)->pending()->create();
 
         $response = putJson("/api/v1/tasks/{$task->id}", [
-            'status' => Task::STATUS_IN_PROGRESS,
+            'status' => TaskStatus::InProgress->value,
         ]);
 
         $response->assertStatus(200)
-            ->assertJson(['status' => Task::STATUS_IN_PROGRESS]);
+            ->assertJson(['status' => TaskStatus::InProgress->value]);
 
         assertDatabaseHas('tasks', [
             'id' => $task->id,
-            'status' => Task::STATUS_IN_PROGRESS,
+            'status' => TaskStatus::InProgress->value,
         ]);
     });
 
@@ -265,7 +266,7 @@ describe('Task Updating', function () {
         $task = Task::factory()->for($user)->pending()->create();
 
         $response = putJson("/api/v1/tasks/{$task->id}", [
-            'status' => Task::STATUS_COMPLETED,
+            'status' => TaskStatus::Completed->value,
         ]);
 
         $response->assertStatus(200);
@@ -284,7 +285,7 @@ describe('Task Updating', function () {
 
         // Change status back to in_progress
         $response = putJson("/api/v1/tasks/{$task->id}", [
-            'status' => Task::STATUS_IN_PROGRESS,
+            'status' => TaskStatus::InProgress->value,
         ]);
 
         $response->assertStatus(200);
@@ -303,7 +304,7 @@ describe('Task Updating', function () {
 
         // Change status to pending
         $response = putJson("/api/v1/tasks/{$task->id}", [
-            'status' => Task::STATUS_PENDING,
+            'status' => TaskStatus::Pending->value,
         ]);
 
         $response->assertStatus(200);
@@ -321,11 +322,11 @@ describe('Task Updating', function () {
         expect($task->completed_at)->toBeNull();
 
         // Update directly via model (not API) to test observer
-        $task->update(['status' => Task::STATUS_COMPLETED]);
+        $task->update(['status' => TaskStatus::Completed]);
         expect($task->completed_at)->not->toBeNull();
 
         // Change back
-        $task->update(['status' => Task::STATUS_PENDING]);
+        $task->update(['status' => TaskStatus::Pending]);
         expect($task->completed_at)->toBeNull();
     });
 });
