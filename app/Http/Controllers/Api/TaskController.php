@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
-use App\Models\Task;
 use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,7 +56,7 @@ class TaskController extends Controller
         $task = $request->user()->tasks()->create([
             'title' => $request->title,
             'description' => $request->description,
-            'status' => $request->status ?? Task::STATUS_PENDING,
+            'status' => $request->status ?? TaskStatus::Pending,
         ]);
 
         /**

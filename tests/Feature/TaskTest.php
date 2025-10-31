@@ -291,7 +291,7 @@ describe('Task Updating', function () {
 
         $task->refresh();
         expect($task->completed_at)->toBeNull();
-        expect($task->status)->toBe(Task::STATUS_IN_PROGRESS);
+        expect($task->status->value)->toBe('in_progress');
     });
 
     test('changing status from completed to pending clears completed_at', function () {
@@ -310,7 +310,7 @@ describe('Task Updating', function () {
 
         $task->refresh();
         expect($task->completed_at)->toBeNull();
-        expect($task->status)->toBe(Task::STATUS_PENDING);
+        expect($task->status->value)->toBe('pending');
     });
 
     test('observer handles status changes without manual intervention', function () {

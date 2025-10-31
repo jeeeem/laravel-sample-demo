@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\TaskStatus;
 use App\Observers\TaskObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +17,9 @@ class Task extends Model
     use HasFactory;
 
     /**
-     * Task status constants
+     * Task status constants (maintained for backward compatibility)
+     *
+     * @deprecated Use TaskStatus enum instead
      */
     public const STATUS_PENDING = 'pending';
 
@@ -44,6 +47,7 @@ class Task extends Model
     protected function casts(): array
     {
         return [
+            'status' => TaskStatus::class,
             'completed_at' => 'datetime',
         ];
     }

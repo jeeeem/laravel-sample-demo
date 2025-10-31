@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Enums\TaskStatus;
 use App\Models\Task;
 
 class TaskObserver
@@ -22,13 +23,21 @@ class TaskObserver
             $newStatus = $task->status;
             $oldStatus = $task->getOriginal('status');
 
+            // Convert string values to enum if needed (Laravel returns raw DB value in getOriginal)
+            if (is_string($oldStatus)) {
+                $oldStatus = TaskStatus::from($oldStatus);
+            }
+            if (is_string($newStatus)) {
+                $newStatus = TaskStatus::from($newStatus);
+            }
+
             // Set completed_at when status changes to completed
-            if ($newStatus === Task::STATUS_COMPLETED && $oldStatus !== Task::STATUS_COMPLETED) {
+            if ($newStatus === TaskStatus::Completed && $oldStatus !== TaskStatus::Completed) {
                 $task->completed_at = now();
             }
 
             // Clear completed_at if status changes away from completed
-            if ($newStatus !== Task::STATUS_COMPLETED && $oldStatus === Task::STATUS_COMPLETED) {
+            if ($newStatus !== TaskStatus::Completed && $oldStatus === TaskStatus::Completed) {
                 $task->completed_at = null;
             }
         }

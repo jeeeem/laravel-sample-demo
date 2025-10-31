@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Models\Task;
+use App\Enums\TaskStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -45,11 +45,7 @@ class StoreTaskRequest extends FormRequest
              *
              * @example pending
              */
-            'status' => ['nullable', 'string', Rule::in([
-                Task::STATUS_PENDING,
-                Task::STATUS_IN_PROGRESS,
-                Task::STATUS_COMPLETED,
-            ])],
+            'status' => ['nullable', 'string', Rule::in(TaskStatus::values())],
         ];
     }
 }
