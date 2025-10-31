@@ -1,50 +1,48 @@
-## Development Setup
+# Laravel 12 Task API
 
-### API Documentation
+A RESTful API built with Laravel 12 for learning modern Laravel development patterns.
 
-This API is documented using **[Scramble](https://scramble.dedoc.co/)** - an automatic OpenAPI documentation generator for Laravel that requires zero configuration.
+## Tech Stack
 
-#### Accessing the Documentation
+- **Laravel 12** - PHP web framework
+- **Laravel Sanctum 4** - API authentication with tokens
+- **Scramble 0.13** - Automatic OpenAPI documentation
+- **Pest 4** - Modern PHP testing framework
 
-Once the development server is running, you can access:
+## Quick Start
 
-- **Interactive Documentation UI**: [http://localhost:8000/docs/api](http://localhost:8000/docs/api)
-  - Beautiful Stoplight Elements interface
-  - Try out endpoints directly in the browser
-  - See request/response examples
-  - View validation rules and error responses
+```bash
+# Install dependencies
+composer install
 
-- **OpenAPI Specification**: [http://localhost:8000/docs/api.json](http://localhost:8000/docs/api.json)
-  - Download the raw OpenAPI 3.1.0 JSON spec
-  - Import into Postman, Insomnia, or other API clients
-  - Use for code generation or testing tools
+# Start development server
+composer run dev
 
-#### Authentication in Documentation
+# Run tests
+php artisan test
+```
 
-Protected endpoints require a Bearer token:
+## API Documentation
 
-1. First, use the `/api/register` or `/api/login` endpoint to get a token
-2. Copy the token from the response
-3. Click the "Authorize" button in the documentation UI
-4. Enter your token in the format: `Bearer YOUR_TOKEN_HERE`
-5. All subsequent requests will include your authentication
+**Interactive Docs**: [http://localhost:8000/docs/api](http://localhost:8000/docs/api)
 
-#### How It Works
+Scramble automatically generates OpenAPI documentation from your code - no manual maintenance needed!
 
-Scramble automatically generates documentation by analyzing your code:
+### API Versioning
 
-- **Routes**: Reads your `routes/api.php` file
-- **Validation**: Extracts rules from FormRequest classes
-- **Responses**: Infers structure from API Resources
-- **Types**: Uses PHP type hints for accuracy
-- **Descriptions**: Reads PHPDoc comments from controllers
+All endpoints use the `/api/v1/` prefix:
+- `/api/v1/register`
+- `/api/v1/login`
+- `/api/v1/tasks`
 
-**No manual maintenance required** - the docs update automatically when your code changes!
+### Authentication
 
-#### Rate Limiting
+1. Register or login at `/api/v1/register` or `/api/v1/login` to get a token
+2. In the docs UI, enter your token in the Bearer token input field
+3. Format: `YOUR_TOKEN_HERE` (no "Bearer" prefix needed in the input)
 
-The API implements rate limiting to prevent abuse:
+## Rate Limiting
 
-- **Register endpoint**: 3 attempts per minute per IP address
-- **Login endpoint**: 5 attempts per minute per IP address
-- **429 Too Many Attempts** response when limits are exceeded
+- **Register**: 10 attempts/minute per IP
+- **Login**: 10 attempts/minute per IP
+- **General API**: 60 requests/minute per user/IP

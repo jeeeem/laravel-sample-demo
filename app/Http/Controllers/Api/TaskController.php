@@ -35,17 +35,7 @@ class TaskController extends Controller
      *
      * @authenticated
      *
-     * @response 200 [
-     *   {
-     *     "id": 1,
-     *     "title": "Complete project documentation",
-     *     "description": "Write comprehensive API docs",
-     *     "status": "in_progress",
-     *     "completed_at": null,
-     *     "created_at": "2025-10-31T10:00:00Z",
-     *     "updated_at": "2025-10-31T12:00:00Z"
-     *   }
-     * ]
+     * @response TaskResource[]
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
@@ -54,6 +44,11 @@ class TaskController extends Controller
     {
         $tasks = $request->user()->tasks()->latest()->get();
 
+        /**
+         * Collection of tasks for the authenticated user.
+         *
+         * @body TaskResource[]
+         */
         return TaskResource::collection($tasks);
     }
 
@@ -65,15 +60,7 @@ class TaskController extends Controller
      *
      * @authenticated
      *
-     * @response 201 {
-     *   "id": 1,
-     *   "title": "Complete project documentation",
-     *   "description": "Write comprehensive API docs",
-     *   "status": "pending",
-     *   "completed_at": null,
-     *   "created_at": "2025-10-31T10:00:00Z",
-     *   "updated_at": "2025-10-31T10:00:00Z"
-     * }
+     * @response 201 TaskResource
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
@@ -92,6 +79,13 @@ class TaskController extends Controller
             'status' => $request->status ?? Task::STATUS_PENDING,
         ]);
 
+        /**
+         * Newly created task.
+         *
+         * @status 201
+         *
+         * @body TaskResource
+         */
         return new TaskResource($task);
     }
 
@@ -103,15 +97,7 @@ class TaskController extends Controller
      *
      * @authenticated
      *
-     * @response 200 {
-     *   "id": 1,
-     *   "title": "Complete project documentation",
-     *   "description": "Write comprehensive API docs",
-     *   "status": "completed",
-     *   "completed_at": "2025-10-31T15:00:00Z",
-     *   "created_at": "2025-10-31T10:00:00Z",
-     *   "updated_at": "2025-10-31T15:00:00Z"
-     * }
+     * @response TaskResource
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
@@ -123,6 +109,11 @@ class TaskController extends Controller
     {
         $task = $request->user()->tasks()->findOrFail($id);
 
+        /**
+         * Task details.
+         *
+         * @body TaskResource
+         */
         return new TaskResource($task);
     }
 
@@ -135,15 +126,7 @@ class TaskController extends Controller
      *
      * @authenticated
      *
-     * @response 200 {
-     *   "id": 1,
-     *   "title": "Complete project documentation",
-     *   "description": "Updated description",
-     *   "status": "completed",
-     *   "completed_at": "2025-10-31T15:00:00Z",
-     *   "created_at": "2025-10-31T10:00:00Z",
-     *   "updated_at": "2025-10-31T15:00:00Z"
-     * }
+     * @response TaskResource
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
@@ -164,6 +147,11 @@ class TaskController extends Controller
         // Observer handles completed_at timestamp automatically
         $task->update($request->only(['title', 'description', 'status']));
 
+        /**
+         * Updated task details.
+         *
+         * @body TaskResource
+         */
         return new TaskResource($task);
     }
 
@@ -188,6 +176,11 @@ class TaskController extends Controller
         $task = $request->user()->tasks()->findOrFail($id);
         $task->delete();
 
+        /**
+         * No content response on successful deletion.
+         *
+         * @status 204
+         */
         return response()->json(null, 204);
     }
 }

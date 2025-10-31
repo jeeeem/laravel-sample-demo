@@ -24,8 +24,25 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
+            /**
+             * User's full name. Must contain only letters, spaces, hyphens, dots, and apostrophes.
+             *
+             * @example John Doe
+             */
             'name' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\p{L}\s\-\.\']+$/u'],
+
+            /**
+             * User's email address. Must be unique and valid (RFC compliant with DNS check).
+             *
+             * @example john.doe@example.com
+             */
             'email' => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users'],
+
+            /**
+             * User's password. Must be at least 8 characters and include password_confirmation field.
+             *
+             * @example SecurePass123!
+             */
             'password' => ['required', 'string', 'min:8', 'max:72', 'confirmed'],
         ];
     }

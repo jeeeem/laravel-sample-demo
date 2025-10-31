@@ -27,8 +27,25 @@ class UpdateTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
+            /**
+             * The task title. Only required if provided.
+             *
+             * @example Complete weekly report
+             */
             'title' => ['sometimes', 'required', 'string', 'max:255'],
+
+            /**
+             * Optional task description. Can be set to null to clear existing description.
+             *
+             * @example Finish by Friday EOD
+             */
             'description' => ['nullable', 'string', 'max:1000'],
+
+            /**
+             * Task status. Only required if provided.
+             *
+             * @example in_progress
+             */
             'status' => ['sometimes', 'string', Rule::in([
                 Task::STATUS_PENDING,
                 Task::STATUS_IN_PROGRESS,

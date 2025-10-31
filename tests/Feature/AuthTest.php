@@ -224,29 +224,29 @@ describe('Protected Routes', function () {
 });
 
 describe('Rate Limiting', function () {
-    test('login endpoint is rate limited to 5 attempts per minute', function () {
-        // Make 5 requests (should all succeed or fail based on credentials, but not be rate limited)
-        for ($i = 0; $i < 5; $i++) {
+    test('login endpoint is rate limited to 10 attempts per minute', function () {
+        // Make 10 requests (should all succeed or fail based on credentials, but not be rate limited)
+        for ($i = 0; $i < 10; $i++) {
             postJson('/api/v1/login', [
                 'email' => 'nonexistent@gmail.com',
                 'password' => 'wrong',
             ])->assertStatus(422); // Invalid credentials
         }
 
-        // 6th request should be rate limited
+        // 11th request should be rate limited
         $response = postJson('/api/v1/login', [
             'email' => 'nonexistent@gmail.com',
             'password' => 'wrong',
         ]);
 
         $response->assertStatus(429) // Too Many Requests
-            ->assertHeader('X-RateLimit-Limit', '5')
+            ->assertHeader('X-RateLimit-Limit', '10')
             ->assertHeader('Retry-After');
     });
 
-    test('register endpoint is rate limited to 3 attempts per minute', function () {
-        // Make 3 requests (should fail validation, but not be rate limited)
-        for ($i = 0; $i < 3; $i++) {
+    test('register endpoint is rate limited to 10 attempts per minute', function () {
+        // Make 10 requests (should fail validation, but not be rate limited)
+        for ($i = 0; $i < 10; $i++) {
             postJson('/api/v1/register', [
                 'name' => 'Test User',
                 'email' => 'invalid-email', // Invalid format
@@ -255,7 +255,7 @@ describe('Rate Limiting', function () {
             ])->assertStatus(422); // Validation error
         }
 
-        // 4th request should be rate limited
+        // 11th request should be rate limited
         $response = postJson('/api/v1/register', [
             'name' => 'Test User',
             'email' => 'invalid-email',
@@ -264,7 +264,7 @@ describe('Rate Limiting', function () {
         ]);
 
         $response->assertStatus(429)
-            ->assertHeader('X-RateLimit-Limit', '3')
+            ->assertHeader('X-RateLimit-Limit', '10')
             ->assertHeader('Retry-After');
     });
 
@@ -280,7 +280,7 @@ describe('Rate Limiting', function () {
         ]);
 
         $response->assertStatus(200)
-            ->assertHeader('X-RateLimit-Limit', '5')
+            ->assertHeader('X-RateLimit-Limit', '10')
             ->assertHeader('X-RateLimit-Remaining');
     });
 });

@@ -26,8 +26,25 @@ class StoreTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
+            /**
+             * The task title.
+             *
+             * @example Buy groceries
+             */
             'title' => ['required', 'string', 'max:255'],
+
+            /**
+             * Optional task description providing additional details.
+             *
+             * @example Remember to check for fresh produce
+             */
             'description' => ['nullable', 'string', 'max:1000'],
+
+            /**
+             * Task status. Defaults to 'pending' if not provided.
+             *
+             * @example pending
+             */
             'status' => ['nullable', 'string', Rule::in([
                 Task::STATUS_PENDING,
                 Task::STATUS_IN_PROGRESS,

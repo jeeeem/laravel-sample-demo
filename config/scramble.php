@@ -45,8 +45,8 @@ Tokens are issued upon successful registration or login.
 To prevent abuse, the following rate limits are enforced:
 
 ### Public Endpoints
-- **POST /api/register**: 3 attempts per minute per IP address
-- **POST /api/login**: 5 attempts per minute per IP address
+- **POST /api/v1/register**: 10 attempts per minute per IP address
+- **POST /api/v1/login**: 10 attempts per minute per IP address
 
 ### Protected Endpoints
 - Standard rate limits apply to all authenticated endpoints

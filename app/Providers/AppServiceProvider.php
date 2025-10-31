@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -29,6 +32,14 @@ class AppServiceProvider extends ServiceProvider
         // Returns {"id": 1, "title": "..."} instead of {"data": {"id": 1, ...}}
         JsonResource::withoutWrapping();
 
+        // Configure Scramble API documentation with Bearer token authentication
+        Scramble::configure()
+            ->withDocumentTransformers(function (OpenApi $openApi) {
+                $openApi->secure(
+                    SecurityScheme::http('bearer')
+                );
+            });
+
         $this->configureRateLimiting();
     }
 
@@ -40,13 +51,13 @@ class AppServiceProvider extends ServiceProvider
         // Login endpoint: 5 attempts per minute per IP
         // Prevents brute force password attacks
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+            return Limit::perMinute(10)->by($request->ip());
         });
 
         // Register endpoint: 3 attempts per minute per IP
         // Prevents spam account creation
         RateLimiter::for('register', function (Request $request) {
-            return Limit::perMinute(3)->by($request->ip());
+            return Limit::perMinute(10)->by($request->ip());
         });
 
         // General API: 60 requests per minute per user or IP

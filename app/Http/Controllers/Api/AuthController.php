@@ -21,8 +21,8 @@ use Illuminate\Validation\ValidationException;
  * All authenticated endpoints require a Bearer token in the Authorization header.
  *
  * Rate Limiting:
- * - Register: 3 attempts per minute per IP address
- * - Login: 5 attempts per minute per IP address
+ * - Register: 10 attempts per minute per IP address
+ * - Login: 10 attempts per minute per IP address
  */
 class AuthController extends Controller
 {
@@ -33,24 +33,17 @@ class AuthController extends Controller
      * This endpoint allows new users to sign up for the application. Upon successful registration,
      * the user receives their account details and a token they can use for subsequent API requests.
      *
-     * Rate limit: 3 attempts per minute per IP address to prevent abuse.
+     * Rate limit: 10 attempts per minute per IP address to prevent abuse.
      *
-     * @response 201 {
-     *   "user": {
-     *     "id": 1,
-     *     "name": "John Doe",
-     *     "email": "john@example.com"
-     *   },
-     *   "token": "1|AbCdEfGhIjKlMnOpQrStUvWxYz"
-     * }
+     * @unauthenticated
      *
+     * @response 201 array{user: UserResource, token: string}
      * @response 422 {
      *   "message": "The email has already been taken.",
      *   "errors": {
      *     "email": ["The email has already been taken."]
      *   }
      * }
-     *
      * @response 429 {
      *   "message": "Too Many Attempts."
      * }
@@ -65,6 +58,13 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
+        /**
+         * Newly created user with authentication token.
+         *
+         * @status 201
+         *
+         * @body array{user: UserResource, token: string}
+         */
         return response()->json([
             'user' => new UserResource($user),
             'token' => $token,
@@ -78,24 +78,17 @@ class AuthController extends Controller
      * This endpoint verifies the user's credentials and, if valid, returns their account
      * details along with a fresh authentication token for making authenticated API requests.
      *
-     * Rate limit: 5 attempts per minute per IP address to prevent brute-force attacks.
+     * Rate limit: 10 attempts per minute per IP address to prevent brute-force attacks.
      *
-     * @response 200 {
-     *   "user": {
-     *     "id": 1,
-     *     "name": "John Doe",
-     *     "email": "john@example.com"
-     *   },
-     *   "token": "2|XyZaBcDeFgHiJkLmNoPqRsTuVw"
-     * }
+     * @unauthenticated
      *
+     * @response array{user: UserResource, token: string}
      * @response 422 {
      *   "message": "The provided credentials are incorrect.",
      *   "errors": {
      *     "email": ["The provided credentials are incorrect."]
      *   }
      * }
-     *
      * @response 429 {
      *   "message": "Too Many Attempts."
      * }
@@ -112,6 +105,11 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
+        /**
+         * User details with authentication token.
+         *
+         * @body array{user: UserResource, token: string}
+         */
         return response()->json([
             'user' => new UserResource($user),
             'token' => $token,
@@ -127,10 +125,7 @@ class AuthController extends Controller
      *
      * @authenticated
      *
-     * @response 200 {
-     *   "message": "Logged out successfully"
-     * }
-     *
+     * @response array{message: string}
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
@@ -139,6 +134,11 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
+        /**
+         * Success message confirming logout.
+         *
+         * @body array{message: string}
+         */
         return response()->json([
             'message' => 'Logged out successfully',
         ]);
