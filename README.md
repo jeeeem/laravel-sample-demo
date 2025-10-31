@@ -26,7 +26,7 @@ php artisan test
 
 **Interactive Docs**: [http://localhost:8000/docs/api](http://localhost:8000/docs/api)
 
-Scramble automatically generates OpenAPI documentation from your code - no manual maintenance needed!
+<img width="1300" height="873" alt="image" src="https://github.com/user-attachments/assets/953a13a5-2ce4-4e07-ae40-57015bb6cd36" />
 
 ### API Versioning
 
