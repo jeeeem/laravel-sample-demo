@@ -18,7 +18,7 @@ describe('Task Creation', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = postJson('/api/tasks', [
+        $response = postJson('/api/v1/tasks', [
             'title' => 'Test Task',
             'description' => 'This is a test task',
         ]);
@@ -41,7 +41,7 @@ describe('Task Creation', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = postJson('/api/tasks', [
+        $response = postJson('/api/v1/tasks', [
             'description' => 'Description without title',
         ]);
 
@@ -53,7 +53,7 @@ describe('Task Creation', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = postJson('/api/tasks', [
+        $response = postJson('/api/v1/tasks', [
             'title' => str_repeat('a', 256),
         ]);
 
@@ -65,7 +65,7 @@ describe('Task Creation', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = postJson('/api/tasks', [
+        $response = postJson('/api/v1/tasks', [
             'title' => 'Task without description',
         ]);
 
@@ -80,7 +80,7 @@ describe('Task Creation', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = postJson('/api/tasks', [
+        $response = postJson('/api/v1/tasks', [
             'title' => 'New Task',
         ]);
 
@@ -96,7 +96,7 @@ describe('Task Listing', function () {
 
         Task::factory()->count(3)->for($user)->create();
 
-        $response = getJson('/api/tasks');
+        $response = getJson('/api/v1/tasks');
 
         $response->assertStatus(200)
             ->assertJsonCount(3);
@@ -110,7 +110,7 @@ describe('Task Listing', function () {
         Task::factory()->count(2)->for($user2)->create();
 
         Sanctum::actingAs($user1);
-        $response = getJson('/api/tasks');
+        $response = getJson('/api/v1/tasks');
 
         $response->assertStatus(200)
             ->assertJsonCount(3);
@@ -120,7 +120,7 @@ describe('Task Listing', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = getJson('/api/tasks');
+        $response = getJson('/api/v1/tasks');
 
         $response->assertStatus(200)
             ->assertJsonCount(0);
@@ -135,7 +135,7 @@ describe('Task Listing', function () {
             'status' => Task::STATUS_IN_PROGRESS,
         ]);
 
-        $response = getJson('/api/tasks');
+        $response = getJson('/api/v1/tasks');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -153,7 +153,7 @@ describe('Task Viewing', function () {
             'title' => 'My Task',
         ]);
 
-        $response = getJson("/api/tasks/{$task->id}");
+        $response = getJson("/api/v1/tasks/{$task->id}");
 
         $response->assertStatus(200)
             ->assertJson([
@@ -169,7 +169,7 @@ describe('Task Viewing', function () {
         $task = Task::factory()->for($user2)->create();
 
         Sanctum::actingAs($user1);
-        $response = getJson("/api/tasks/{$task->id}");
+        $response = getJson("/api/v1/tasks/{$task->id}");
 
         $response->assertStatus(404);
     });
@@ -178,7 +178,7 @@ describe('Task Viewing', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = getJson('/api/tasks/99999');
+        $response = getJson('/api/v1/tasks/99999');
 
         $response->assertStatus(404);
     });
@@ -193,7 +193,7 @@ describe('Task Updating', function () {
             'title' => 'Original Title',
         ]);
 
-        $response = putJson("/api/tasks/{$task->id}", [
+        $response = putJson("/api/v1/tasks/{$task->id}", [
             'title' => 'Updated Title',
             'description' => 'Updated description',
         ]);
@@ -218,7 +218,7 @@ describe('Task Updating', function () {
         $task = Task::factory()->for($user2)->create();
 
         Sanctum::actingAs($user1);
-        $response = putJson("/api/tasks/{$task->id}", [
+        $response = putJson("/api/v1/tasks/{$task->id}", [
             'title' => 'Hacked Title',
         ]);
 
@@ -231,7 +231,7 @@ describe('Task Updating', function () {
 
         $task = Task::factory()->for($user)->create();
 
-        $response = putJson("/api/tasks/{$task->id}", [
+        $response = putJson("/api/v1/tasks/{$task->id}", [
             'title' => '',
         ]);
 
@@ -245,7 +245,7 @@ describe('Task Updating', function () {
 
         $task = Task::factory()->for($user)->pending()->create();
 
-        $response = putJson("/api/tasks/{$task->id}", [
+        $response = putJson("/api/v1/tasks/{$task->id}", [
             'status' => Task::STATUS_IN_PROGRESS,
         ]);
 
@@ -264,7 +264,7 @@ describe('Task Updating', function () {
 
         $task = Task::factory()->for($user)->pending()->create();
 
-        $response = putJson("/api/tasks/{$task->id}", [
+        $response = putJson("/api/v1/tasks/{$task->id}", [
             'status' => Task::STATUS_COMPLETED,
         ]);
 
@@ -272,6 +272,61 @@ describe('Task Updating', function () {
 
         $task->refresh();
         expect($task->completed_at)->not->toBeNull();
+    });
+
+    test('changing status from completed clears completed_at timestamp', function () {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        // Create a completed task
+        $task = Task::factory()->for($user)->completed()->create();
+        expect($task->completed_at)->not->toBeNull();
+
+        // Change status back to in_progress
+        $response = putJson("/api/v1/tasks/{$task->id}", [
+            'status' => Task::STATUS_IN_PROGRESS,
+        ]);
+
+        $response->assertStatus(200);
+
+        $task->refresh();
+        expect($task->completed_at)->toBeNull();
+        expect($task->status)->toBe(Task::STATUS_IN_PROGRESS);
+    });
+
+    test('changing status from completed to pending clears completed_at', function () {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        // Create a completed task
+        $task = Task::factory()->for($user)->completed()->create();
+
+        // Change status to pending
+        $response = putJson("/api/v1/tasks/{$task->id}", [
+            'status' => Task::STATUS_PENDING,
+        ]);
+
+        $response->assertStatus(200);
+
+        $task->refresh();
+        expect($task->completed_at)->toBeNull();
+        expect($task->status)->toBe(Task::STATUS_PENDING);
+    });
+
+    test('observer handles status changes without manual intervention', function () {
+        $user = User::factory()->create();
+
+        // Create task
+        $task = Task::factory()->for($user)->pending()->create();
+        expect($task->completed_at)->toBeNull();
+
+        // Update directly via model (not API) to test observer
+        $task->update(['status' => Task::STATUS_COMPLETED]);
+        expect($task->completed_at)->not->toBeNull();
+
+        // Change back
+        $task->update(['status' => Task::STATUS_PENDING]);
+        expect($task->completed_at)->toBeNull();
     });
 });
 
@@ -282,7 +337,7 @@ describe('Task Deletion', function () {
 
         $task = Task::factory()->for($user)->create();
 
-        $response = deleteJson("/api/tasks/{$task->id}");
+        $response = deleteJson("/api/v1/tasks/{$task->id}");
 
         $response->assertStatus(204);
     });
@@ -294,7 +349,7 @@ describe('Task Deletion', function () {
         $task = Task::factory()->for($user2)->create();
 
         Sanctum::actingAs($user1);
-        $response = deleteJson("/api/tasks/{$task->id}");
+        $response = deleteJson("/api/v1/tasks/{$task->id}");
 
         $response->assertStatus(404);
     });
@@ -305,7 +360,7 @@ describe('Task Deletion', function () {
 
         $task = Task::factory()->for($user)->create();
 
-        $response = deleteJson("/api/tasks/{$task->id}");
+        $response = deleteJson("/api/v1/tasks/{$task->id}");
 
         $response->assertStatus(204);
         $response->assertNoContent();
@@ -318,7 +373,7 @@ describe('Task Deletion', function () {
         $task = Task::factory()->for($user)->create();
         $taskId = $task->id;
 
-        deleteJson("/api/tasks/{$taskId}");
+        deleteJson("/api/v1/tasks/{$taskId}");
 
         assertDatabaseMissing('tasks', ['id' => $taskId]);
     });
@@ -329,15 +384,15 @@ describe('Authorization', function () {
         $user = User::factory()->create();
         $task = Task::factory()->for($user)->create();
 
-        getJson('/api/tasks')->assertStatus(401);
-        postJson('/api/tasks', ['title' => 'Test'])->assertStatus(401);
-        getJson("/api/tasks/{$task->id}")->assertStatus(401);
-        putJson("/api/tasks/{$task->id}", ['title' => 'Test'])->assertStatus(401);
-        deleteJson("/api/tasks/{$task->id}")->assertStatus(401);
+        getJson('/api/v1/tasks')->assertStatus(401);
+        postJson('/api/v1/tasks', ['title' => 'Test'])->assertStatus(401);
+        getJson("/api/v1/tasks/{$task->id}")->assertStatus(401);
+        putJson("/api/v1/tasks/{$task->id}", ['title' => 'Test'])->assertStatus(401);
+        deleteJson("/api/v1/tasks/{$task->id}")->assertStatus(401);
     });
 
     test('unauthenticated requests are rejected', function () {
-        $response = getJson('/api/tasks');
+        $response = getJson('/api/v1/tasks');
 
         $response->assertStatus(401)
             ->assertJson(['message' => 'Unauthenticated.']);
@@ -353,13 +408,12 @@ describe('Authorization', function () {
         Task::factory()->count(1)->for($user3)->create();
 
         Sanctum::actingAs($user1);
-        expect(getJson('/api/tasks')->json())->toHaveCount(2);
+        expect(getJson('/api/v1/tasks')->json())->toHaveCount(2);
 
         Sanctum::actingAs($user2);
-        expect(getJson('/api/tasks')->json())->toHaveCount(3);
+        expect(getJson('/api/v1/tasks')->json())->toHaveCount(3);
 
         Sanctum::actingAs($user3);
-        expect(getJson('/api/tasks')->json())->toHaveCount(1);
+        expect(getJson('/api/v1/tasks')->json())->toHaveCount(1);
     });
 });
-

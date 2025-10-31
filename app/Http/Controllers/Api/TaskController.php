@@ -10,8 +10,8 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
  * @group Task Management
@@ -46,6 +46,9 @@ class TaskController extends Controller
      *     "updated_at": "2025-10-31T12:00:00Z"
      *   }
      * ]
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -71,7 +74,9 @@ class TaskController extends Controller
      *   "created_at": "2025-10-31T10:00:00Z",
      *   "updated_at": "2025-10-31T10:00:00Z"
      * }
-     *
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      * @response 422 {
      *   "message": "The title field is required.",
      *   "errors": {
@@ -107,7 +112,9 @@ class TaskController extends Controller
      *   "created_at": "2025-10-31T10:00:00Z",
      *   "updated_at": "2025-10-31T15:00:00Z"
      * }
-     *
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      * @response 404 {
      *   "message": "No query results for model [App\\Models\\Task]."
      * }
@@ -124,7 +131,7 @@ class TaskController extends Controller
      *
      * Updates an existing task. Users can only update their own tasks. All fields
      * are optional - only provided fields will be updated. When status is changed
-     * to 'completed', the completed_at timestamp is automatically set.
+     * to 'completed', the completed_at timestamp is automatically set by the TaskObserver.
      *
      * @authenticated
      *
@@ -137,11 +144,12 @@ class TaskController extends Controller
      *   "created_at": "2025-10-31T10:00:00Z",
      *   "updated_at": "2025-10-31T15:00:00Z"
      * }
-     *
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      * @response 404 {
      *   "message": "No query results for model [App\\Models\\Task]."
      * }
-     *
      * @response 422 {
      *   "message": "The status must be one of: pending, in_progress, completed.",
      *   "errors": {
@@ -153,19 +161,8 @@ class TaskController extends Controller
     {
         $task = $request->user()->tasks()->findOrFail($id);
 
-        $data = $request->only(['title', 'description', 'status']);
-
-        // Set completed_at when status changes to completed
-        if (isset($data['status']) && $data['status'] === Task::STATUS_COMPLETED && $task->status !== Task::STATUS_COMPLETED) {
-            $data['completed_at'] = now();
-        }
-
-        // Clear completed_at if status is changed from completed to something else
-        if (isset($data['status']) && $data['status'] !== Task::STATUS_COMPLETED && $task->status === Task::STATUS_COMPLETED) {
-            $data['completed_at'] = null;
-        }
-
-        $task->update($data);
+        // Observer handles completed_at timestamp automatically
+        $task->update($request->only(['title', 'description', 'status']));
 
         return new TaskResource($task);
     }
@@ -179,7 +176,9 @@ class TaskController extends Controller
      * @authenticated
      *
      * @response 204
-     *
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      * @response 404 {
      *   "message": "No query results for model [App\\Models\\Task]."
      * }

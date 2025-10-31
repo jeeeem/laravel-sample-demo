@@ -7,7 +7,7 @@ return [
      * Your API path. By default, all routes starting with this path will be added to the docs.
      * If you need to change this behavior, you can add your custom routes resolver using `Scramble::routes()`.
      */
-    'api_path' => 'api',
+    'api_path' => 'api/v1',
 
     /*
      * Your API domain. By default, app domain is used. This is also a part of the default API routes
@@ -29,7 +29,30 @@ return [
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => 'A RESTful API built with Laravel 12 for learning purposes. Features JWT-less authentication using Laravel Sanctum with Bearer tokens, rate limiting, and comprehensive validation.',
+        'description' => 'A RESTful API built with Laravel 12 for learning purposes. Features JWT-less authentication using Laravel Sanctum with Bearer tokens, comprehensive validation, and rate limiting.
+
+## Authentication
+
+All protected endpoints require a Bearer token in the Authorization header:
+```
+Authorization: Bearer {your-token-here}
+```
+
+Tokens are issued upon successful registration or login.
+
+## Rate Limiting
+
+To prevent abuse, the following rate limits are enforced:
+
+### Public Endpoints
+- **POST /api/register**: 3 attempts per minute per IP address
+- **POST /api/login**: 5 attempts per minute per IP address
+
+### Protected Endpoints
+- Standard rate limits apply to all authenticated endpoints
+- Rate limits are tracked per authenticated user
+
+When rate limited, you will receive a `429 Too Many Attempts` response.',
     ],
 
     /*
@@ -133,15 +156,4 @@ return [
     ],
 
     'extensions' => [],
-
-    /*
-     * Configure API authentication schemes for OpenAPI documentation.
-     */
-    'api' => [
-        'bearer_token' => [
-            'type' => 'http',
-            'scheme' => 'bearer',
-            'bearerFormat' => 'token',
-        ],
-    ],
 ];

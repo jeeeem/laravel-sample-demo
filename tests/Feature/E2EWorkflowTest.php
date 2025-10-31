@@ -6,12 +6,18 @@ use App\Models\Task;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
-use function Pest\Laravel\{assertDatabaseCount, assertDatabaseHas, assertDatabaseMissing, getJson, postJson, putJson, deleteJson};
+use function Pest\Laravel\assertDatabaseCount;
+use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertDatabaseMissing;
+use function Pest\Laravel\deleteJson;
+use function Pest\Laravel\getJson;
+use function Pest\Laravel\postJson;
+use function Pest\Laravel\putJson;
 
 describe('Complete User Journey', function () {
     test('user can complete full workflow from registration to task management', function () {
         // Step 1: Register a new user
-        $registerResponse = postJson('/api/register', [
+        $registerResponse = postJson('/api/v1/register', [
             'name' => 'John Doe',
             'email' => 'john.doe.test@gmail.com',
             'password' => 'password123',
@@ -20,7 +26,7 @@ describe('Complete User Journey', function () {
 
         $registerResponse->assertStatus(201);
         expect($registerResponse->json())->toHaveKeys(['user', 'token']);
-        
+
         $userId = $registerResponse->json('user.id');
         $user = User::find($userId);
 
@@ -28,7 +34,7 @@ describe('Complete User Journey', function () {
         Sanctum::actingAs($user);
 
         // Step 2: Verify user can access profile
-        $profileResponse = getJson('/api/user');
+        $profileResponse = getJson('/api/v1/user');
 
         $profileResponse->assertStatus(200)
             ->assertJson([
@@ -38,7 +44,7 @@ describe('Complete User Journey', function () {
             ]);
 
         // Step 3: Create multiple tasks
-        $task1 = postJson('/api/tasks', [
+        $task1 = postJson('/api/v1/tasks', [
             'title' => 'Complete project documentation',
             'description' => 'Write API docs',
             'status' => Task::STATUS_PENDING,
@@ -47,7 +53,7 @@ describe('Complete User Journey', function () {
         $task1->assertStatus(201);
         $task1Id = $task1->json('id');
 
-        $task2 = postJson('/api/tasks', [
+        $task2 = postJson('/api/v1/tasks', [
             'title' => 'Review pull requests',
             'description' => 'Check team PRs',
         ]);
@@ -55,7 +61,7 @@ describe('Complete User Journey', function () {
         $task2->assertStatus(201);
         $task2Id = $task2->json('id');
 
-        $task3 = postJson('/api/tasks', [
+        $task3 = postJson('/api/v1/tasks', [
             'title' => 'Setup CI/CD pipeline',
         ]);
 
@@ -63,13 +69,13 @@ describe('Complete User Journey', function () {
         $task3Id = $task3->json('id');
 
         // Step 4: List all tasks
-        $listResponse = getJson('/api/tasks');
+        $listResponse = getJson('/api/v1/tasks');
 
         $listResponse->assertStatus(200)
             ->assertJsonCount(3);
 
         // Step 5: Update task status to in_progress
-        $updateResponse = putJson("/api/tasks/{$task1Id}", [
+        $updateResponse = putJson("/api/v1/tasks/{$task1Id}", [
             'status' => Task::STATUS_IN_PROGRESS,
         ]);
 
@@ -80,7 +86,7 @@ describe('Complete User Journey', function () {
             ]);
 
         // Step 6: Complete a task
-        $completeResponse = putJson("/api/tasks/{$task1Id}", [
+        $completeResponse = putJson("/api/v1/tasks/{$task1Id}", [
             'status' => Task::STATUS_COMPLETED,
         ]);
 
@@ -93,7 +99,7 @@ describe('Complete User Journey', function () {
         expect($completeResponse->json('completed_at'))->not->toBeNull();
 
         // Step 7: View specific task details
-        $viewResponse = getJson("/api/tasks/{$task2Id}");
+        $viewResponse = getJson("/api/v1/tasks/{$task2Id}");
 
         $viewResponse->assertStatus(200)
             ->assertJson([
@@ -103,20 +109,20 @@ describe('Complete User Journey', function () {
             ]);
 
         // Step 8: Delete a task
-        $deleteResponse = deleteJson("/api/tasks/{$task3Id}");
+        $deleteResponse = deleteJson("/api/v1/tasks/{$task3Id}");
 
         $deleteResponse->assertStatus(204);
 
         assertDatabaseMissing('tasks', ['id' => $task3Id]);
 
         // Step 9: Verify task list after deletion
-        $finalListResponse = getJson('/api/tasks');
+        $finalListResponse = getJson('/api/v1/tasks');
 
         $finalListResponse->assertStatus(200)
             ->assertJsonCount(2);
 
         // Step 10: Verify logout functionality (tested in AuthTest)
-        $logoutResponse = postJson('/api/logout');
+        $logoutResponse = postJson('/api/v1/logout');
 
         $logoutResponse->assertStatus(200);
 
@@ -158,7 +164,7 @@ describe('Multi-User Workflow', function () {
         // User 1 creates tasks
         Sanctum::actingAs($user1);
 
-        $alice1 = postJson('/api/tasks', [
+        $alice1 = postJson('/api/v1/tasks', [
             'title' => 'Alice Task 1',
             'description' => 'Alice work',
         ]);
@@ -166,14 +172,14 @@ describe('Multi-User Workflow', function () {
         $alice1->assertStatus(201);
         $aliceTaskId = $alice1->json('id');
 
-        postJson('/api/tasks', [
+        postJson('/api/v1/tasks', [
             'title' => 'Alice Task 2',
         ])->assertStatus(201);
 
         // User 2 creates tasks
         Sanctum::actingAs($user2);
 
-        $bob1 = postJson('/api/tasks', [
+        $bob1 = postJson('/api/v1/tasks', [
             'title' => 'Bob Task 1',
             'description' => 'Bob work',
         ]);
@@ -181,18 +187,18 @@ describe('Multi-User Workflow', function () {
         $bob1->assertStatus(201);
         $bobTaskId = $bob1->json('id');
 
-        postJson('/api/tasks', [
+        postJson('/api/v1/tasks', [
             'title' => 'Bob Task 2',
         ])->assertStatus(201);
 
-        postJson('/api/tasks', [
+        postJson('/api/v1/tasks', [
             'title' => 'Bob Task 3',
         ])->assertStatus(201);
 
         // Verify User 1 only sees their own tasks
         Sanctum::actingAs($user1);
 
-        $alice_list = getJson('/api/tasks');
+        $alice_list = getJson('/api/v1/tasks');
 
         $alice_list->assertStatus(200)
             ->assertJsonCount(2);
@@ -204,7 +210,7 @@ describe('Multi-User Workflow', function () {
         // Verify User 2 only sees their own tasks
         Sanctum::actingAs($user2);
 
-        $bob_list = getJson('/api/tasks');
+        $bob_list = getJson('/api/v1/tasks');
 
         $bob_list->assertStatus(200)
             ->assertJsonCount(3);
@@ -217,14 +223,14 @@ describe('Multi-User Workflow', function () {
         // Verify User 1 cannot view User 2's task
         Sanctum::actingAs($user1);
 
-        $unauthorized_view = getJson("/api/tasks/{$bobTaskId}");
+        $unauthorized_view = getJson("/api/v1/tasks/{$bobTaskId}");
 
         $unauthorized_view->assertStatus(404);
 
         // Verify User 2 cannot update User 1's task
         Sanctum::actingAs($user2);
 
-        $unauthorized_update = putJson("/api/tasks/{$aliceTaskId}", [
+        $unauthorized_update = putJson("/api/v1/tasks/{$aliceTaskId}", [
             'title' => 'Hacked title',
         ]);
 
@@ -233,7 +239,7 @@ describe('Multi-User Workflow', function () {
         // Verify User 1 cannot delete User 2's task
         Sanctum::actingAs($user1);
 
-        $unauthorized_delete = deleteJson("/api/tasks/{$bobTaskId}");
+        $unauthorized_delete = deleteJson("/api/v1/tasks/{$bobTaskId}");
 
         $unauthorized_delete->assertStatus(404);
 

@@ -11,7 +11,7 @@ use function Pest\Laravel\withHeader;
 
 describe('User Registration', function () {
     test('users can register with valid data', function () {
-        $response = postJson('/api/register', [
+        $response = postJson('/api/v1/register', [
             'name' => 'J',
             'email' => 'john@gmail.com',
             'password' => 'password123',
@@ -23,7 +23,7 @@ describe('User Registration', function () {
     });
 
     test('registration requires valid email format', function () {
-        $response = postJson('/api/register', [
+        $response = postJson('/api/v1/register', [
             'name' => 'John Doe',
             'email' => 'invalid-email',
             'password' => 'password123',
@@ -37,7 +37,7 @@ describe('User Registration', function () {
     test('registration requires unique email', function () {
         User::factory()->create(['email' => 'john@gmail.com']);
 
-        $response = postJson('/api/register', [
+        $response = postJson('/api/v1/register', [
             'name' => 'John Doe',
             'email' => 'john@gmail.com',
             'password' => 'password123',
@@ -49,7 +49,7 @@ describe('User Registration', function () {
     });
 
     test('registration requires password with minimum 8 characters', function () {
-        $response = postJson('/api/register', [
+        $response = postJson('/api/v1/register', [
             'name' => 'John Doe',
             'email' => 'john@gmail.com',
             'password' => 'short',
@@ -61,7 +61,7 @@ describe('User Registration', function () {
     });
 
     test('registration requires matching password confirmation', function () {
-        $response = postJson('/api/register', [
+        $response = postJson('/api/v1/register', [
             'name' => 'John Doe',
             'email' => 'john@gmail.com',
             'password' => 'password123',
@@ -73,7 +73,7 @@ describe('User Registration', function () {
     });
 
     test('passwords are hashed when stored', function () {
-        postJson('/api/register', [
+        postJson('/api/v1/register', [
             'name' => 'John Doe',
             'email' => 'john.test@gmail.com',
             'password' => 'password123',
@@ -94,7 +94,7 @@ describe('User Login', function () {
             'password' => bcrypt('password123'),
         ]);
 
-        $response = postJson('/api/login', [
+        $response = postJson('/api/v1/login', [
             'email' => 'john.login@gmail.com',
             'password' => 'password123',
         ]);
@@ -107,7 +107,7 @@ describe('User Login', function () {
     });
 
     test('login fails with invalid email', function () {
-        $response = postJson('/api/login', [
+        $response = postJson('/api/v1/login', [
             'email' => 'nonexistent@gmail.com',
             'password' => 'password123',
         ]);
@@ -125,7 +125,7 @@ describe('User Login', function () {
             'password' => bcrypt('password123'),
         ]);
 
-        $response = postJson('/api/login', [
+        $response = postJson('/api/v1/login', [
             'email' => 'john.wrong@gmail.com',
             'password' => 'wrongpassword',
         ]);
@@ -143,7 +143,7 @@ describe('User Login', function () {
             'password' => bcrypt('password123'),
         ]);
 
-        $response = postJson('/api/login', [
+        $response = postJson('/api/v1/login', [
             'email' => 'john.token@gmail.com',
             'password' => 'password123',
         ]);
@@ -161,7 +161,7 @@ describe('User Logout', function () {
         $token = $user->createToken('test-device')->plainTextToken;
 
         $response = withHeader('Authorization', 'Bearer '.$token)
-            ->postJson('/api/logout');
+            ->postJson('/api/v1/logout');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -173,14 +173,14 @@ describe('User Logout', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        postJson('/api/logout');
+        postJson('/api/v1/logout');
 
         // Token should be revoked
         expect($user->tokens()->count())->toBe(0);
     });
 
     test('logout requires authentication', function () {
-        $response = postJson('/api/logout');
+        $response = postJson('/api/v1/logout');
 
         $response->assertStatus(401);
     });
@@ -195,7 +195,7 @@ describe('Protected Routes', function () {
 
         Sanctum::actingAs($user);
 
-        $response = getJson('/api/user');
+        $response = getJson('/api/v1/user');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -206,7 +206,7 @@ describe('Protected Routes', function () {
     });
 
     test('unauthenticated users cannot access profile', function () {
-        $response = getJson('/api/user');
+        $response = getJson('/api/v1/user');
 
         $response->assertStatus(401);
     });
@@ -215,7 +215,7 @@ describe('Protected Routes', function () {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = getJson('/api/user');
+        $response = getJson('/api/v1/user');
 
         $response->assertStatus(200)
             ->assertJsonMissing(['password'])
@@ -227,14 +227,14 @@ describe('Rate Limiting', function () {
     test('login endpoint is rate limited to 5 attempts per minute', function () {
         // Make 5 requests (should all succeed or fail based on credentials, but not be rate limited)
         for ($i = 0; $i < 5; $i++) {
-            postJson('/api/login', [
+            postJson('/api/v1/login', [
                 'email' => 'nonexistent@gmail.com',
                 'password' => 'wrong',
             ])->assertStatus(422); // Invalid credentials
         }
 
         // 6th request should be rate limited
-        $response = postJson('/api/login', [
+        $response = postJson('/api/v1/login', [
             'email' => 'nonexistent@gmail.com',
             'password' => 'wrong',
         ]);
@@ -247,7 +247,7 @@ describe('Rate Limiting', function () {
     test('register endpoint is rate limited to 3 attempts per minute', function () {
         // Make 3 requests (should fail validation, but not be rate limited)
         for ($i = 0; $i < 3; $i++) {
-            postJson('/api/register', [
+            postJson('/api/v1/register', [
                 'name' => 'Test User',
                 'email' => 'invalid-email', // Invalid format
                 'password' => 'password123',
@@ -256,7 +256,7 @@ describe('Rate Limiting', function () {
         }
 
         // 4th request should be rate limited
-        $response = postJson('/api/register', [
+        $response = postJson('/api/v1/register', [
             'name' => 'Test User',
             'email' => 'invalid-email',
             'password' => 'password123',
@@ -274,7 +274,7 @@ describe('Rate Limiting', function () {
             'password' => bcrypt('password123'),
         ]);
 
-        $response = postJson('/api/login', [
+        $response = postJson('/api/v1/login', [
             'email' => 'test@gmail.com',
             'password' => 'password123',
         ]);
