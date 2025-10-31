@@ -27,21 +27,21 @@ class StoreTaskRequest extends FormRequest
     {
         return [
             /**
-             * The task title.
+             * The task title. Required non-empty string with maximum 255 characters.
              *
-             * @example Buy groceries
+             * @example Buy groceries and cook dinner
              */
             'title' => ['required', 'string', 'max:255'],
 
             /**
-             * Optional task description providing additional details.
+             * Optional task description providing additional details. Maximum 1000 characters.
              *
-             * @example Remember to check for fresh produce
+             * @example Remember to check for fresh produce and get organic vegetables
              */
             'description' => ['nullable', 'string', 'max:1000'],
 
             /**
-             * Task status. Defaults to 'pending' if not provided.
+             * Task status. Must be one of: pending, in_progress, completed. Defaults to 'pending' if not provided.
              *
              * @example pending
              */

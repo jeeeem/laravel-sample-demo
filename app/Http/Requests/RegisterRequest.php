@@ -26,20 +26,23 @@ class RegisterRequest extends FormRequest
         return [
             /**
              * User's full name. Must contain only letters, spaces, hyphens, dots, and apostrophes.
+             * Minimum 2 characters, maximum 255 characters.
              *
              * @example John Doe
              */
             'name' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\p{L}\s\-\.\']+$/u'],
 
             /**
-             * User's email address. Must be unique and valid (RFC compliant with DNS check).
+             * User's email address. Must be unique in the system and a valid format (RFC compliant with DNS check).
+             * Maximum 255 characters.
              *
              * @example john.doe@example.com
              */
             'email' => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users'],
 
             /**
-             * User's password. Must be at least 8 characters and include password_confirmation field.
+             * User's password. Must be at least 8 characters, maximum 72 characters.
+             * Requires a matching password_confirmation field to be sent alongside.
              *
              * @example SecurePass123!
              */

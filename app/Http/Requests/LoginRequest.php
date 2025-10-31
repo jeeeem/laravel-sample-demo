@@ -25,14 +25,14 @@ class LoginRequest extends FormRequest
     {
         return [
             /**
-             * User's registered email address.
+             * User's registered email address. Must be a valid email format.
              *
              * @example john.doe@example.com
              */
             'email' => ['required', 'string', 'email'],
 
             /**
-             * User's account password.
+             * User's account password. Authentication failures return 401 Unauthorized, not 422 validation errors.
              *
              * @example SecurePass123!
              */
