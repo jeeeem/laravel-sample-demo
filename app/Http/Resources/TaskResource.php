@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @property Task $resource
+ */
 class TaskResource extends JsonResource
 {
     /**
@@ -16,14 +20,17 @@ class TaskResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var Task $task */
+        $task = $this->resource;
+
         return [
-            'id' => $this->id,
-            'title' => $this->title,
-            'description' => $this->description,
-            'status' => $this->status,
-            'completed_at' => $this->completed_at?->toIso8601String(),
-            'created_at' => $this->created_at->toIso8601String(),
-            'updated_at' => $this->updated_at->toIso8601String(),
+            'id' => $task->id,
+            'title' => $task->title,
+            'description' => $task->description,
+            'status' => $task->status,
+            'completed_at' => $task->completed_at?->toIso8601String(),
+            'created_at' => $task->created_at->toIso8601String(),
+            'updated_at' => $task->updated_at->toIso8601String(),
         ];
     }
 }

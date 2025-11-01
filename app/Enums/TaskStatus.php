@@ -21,7 +21,7 @@ enum TaskStatus: string
     /**
      * Get all available status values.
      *
-     * @return array<string>
+     * @return array<int, string>
      */
     public static function values(): array
     {

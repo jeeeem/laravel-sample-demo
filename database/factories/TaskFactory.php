@@ -16,7 +16,7 @@ class TaskFactory extends Factory
     /**
      * Define the model's default state.
      *
-     * @return array<string, mixed>
+     * @return array{user_id: int|\Illuminate\Database\Eloquent\Factories\Factory<User>, title: string, description: string, status: TaskStatus, completed_at: null}
      */
     public function definition(): array
     {

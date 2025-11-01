@@ -20,15 +20,18 @@ class TaskObserver
     {
         // Check if status is being changed
         if ($task->isDirty('status')) {
+            // Get new status (cast to enum by model)
             $newStatus = $task->status;
-            $oldStatus = $task->getOriginal('status');
 
-            // Convert string values to enum if needed (Laravel returns raw DB value in getOriginal)
-            if (is_string($oldStatus)) {
-                $oldStatus = TaskStatus::from($oldStatus);
-            }
-            if (is_string($newStatus)) {
-                $newStatus = TaskStatus::from($newStatus);
+            // Get old status (raw DB value from getOriginal - could be string or enum)
+            $oldStatusRaw = $task->getOriginal('status');
+
+            // Convert to enum if needed
+            if (is_string($oldStatusRaw)) {
+                $oldStatus = TaskStatus::from($oldStatusRaw);
+            } else {
+                /** @var TaskStatus $oldStatusRaw */
+                $oldStatus = $oldStatusRaw;
             }
 
             // Set completed_at when status changes to completed

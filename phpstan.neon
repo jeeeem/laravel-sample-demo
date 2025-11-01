@@ -1,0 +1,22 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app
+        - config
+        - database
+        - routes
+        - tests
+    
+    # Exclude generated/cache files
+    excludePaths:
+        - database/migrations/*.php
+    
+    # Larastan-specific configuration
+    # Enable model property checks (validates model properties passed to methods)
+    checkModelProperties: true
+    
+    # Enable model appends checks (validates $appends computed properties)
+    checkModelAppends: true
