@@ -14,17 +14,40 @@ A RESTful API built with Laravel 12 for learning modern Laravel development patt
 ```bash
 # Install dependencies
 composer install
+```
 
-# Start development server
+## Development Commands
+
+### Daily Development
+
+```bash
+# Start the API server (http://127.0.0.1:8000)
+php artisan serve
+
+# Alternative: Use composer script
 composer run dev
+```
 
-# Run tests
-php artisan test
+### Testing & Quality
+
+```bash
+# Run all tests
+composer run test
+
+# Run PHPStan type checking
+composer run phpstan
+
+# Run both PHPStan + tests
+composer run check
+
+# Format code with Laravel Pint
+vendor/bin/pint
 ```
 
 ## API Documentation
 
-**Interactive Docs**: [http://localhost:8000/docs/api](http://localhost:8000/docs/api)
+- **API Base**: http://127.0.0.1:8000/api/v1
+- **API Documentation**: http://127.0.0.1:8000/docs/api
 
 <img width="1300" height="873" alt="image" src="https://github.com/user-attachments/assets/953a13a5-2ce4-4e07-ae40-57015bb6cd36" />
 
